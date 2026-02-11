@@ -1,0 +1,15 @@
+{
+  "name": "My Kawaii Plan 🎀",
+  "short_name": "KawaiiPlan",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff0f5",
+  "theme_color": "#ffb7c5",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

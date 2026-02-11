@@ -113,6 +113,19 @@
                 <button class="theme-btn" data-theme="mint" style="background:#98ff98;">Mint</button>
             </div>
 
+            <h4 class="section-title" style="margin-top:20px;">背景テーマ (Z-Gen) ✨</h4>
+            <div class="theme-selector">
+                <button class="bg-btn" data-bg="" style="background:white; color:black;">初期</button>
+                <button class="bg-btn" data-bg="aurora"
+                    style="background:linear-gradient(120deg, #84fab0, #8fd3f4);">Aurora</button>
+                <button class="bg-btn" data-bg="sunset"
+                    style="background:linear-gradient(120deg, #f6d365, #fda085);">Sunset</button>
+                <button class="bg-btn" data-bg="dream"
+                    style="background:linear-gradient(120deg, #a18cd1, #fbc2eb);">Dream</button>
+                <button class="bg-btn" data-bg="midnight"
+                    style="background:linear-gradient(to top, #30cfd0, #330867); color:white;">Night</button>
+            </div>
+
             <h4 class="section-title" style="margin-top:20px;">データ管理 💾</h4>
             <div class="data-manage-box">
                 <button id="backupBtn" class="save-btn" style="background:#4CAF50; margin-bottom:10px;">データを保存する
@@ -146,7 +159,16 @@
 
             <div class="input-group">
                 <label>今日の1枚 📸</label>
-                <input type="file" id="eventImageInput" accept="image/*">
+                <div class="image-buttons">
+                    <label class="upload-btn camera">
+                        📷 カメラ起動
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+                    </label>
+                    <label class="upload-btn gallery">
+                        🖼️ アルバム
+                        <input type="file" id="galleryInput" accept="image/*" style="display:none">
+                    </label>
+                </div>
                 <div id="imagePreviewContainer" class="hidden">
                     <img id="imagePreview" src="" alt="Preview">
                     <button id="removeImageBtn">🗑️</button>
