@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // const closeModal = document.querySelector('.close-btn'); // removed
     const modalDate = document.getElementById('modalDate');
     const modalTextarea = modal.querySelector('textarea');
-    const saveBtn = document.querySelector('.save-btn');
+    const saveBtn = document.getElementById('saveEventBtn');
 
     let currentDate = new Date();
     let selectedDateStr = null; // Format: YYYY-M-D

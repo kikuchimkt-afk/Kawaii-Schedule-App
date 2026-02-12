@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kawaii-plan-v1';
+const CACHE_NAME = 'kawaii-plan-v2';
 const urlsToCache = [
     './',
     './index.html',
