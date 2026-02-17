@@ -1192,3 +1192,268 @@ header h1 {
         font-size: 0.8rem;
     }
 }
+
+/* ========== Page View Switching ========== */
+.page-view {
+    display: none;
+}
+
+.page-view.active {
+    display: block;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+/* ========== Memo Page Styles ========== */
+.memo-wrapper {
+    padding: 15px;
+}
+
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.memo-header h3 {
+    color: var(--accent-color);
+    font-size: 1.15rem;
+}
+
+.add-memo-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.add-memo-btn:active {
+    transform: scale(0.95);
+}
+
+.memo-search-box {
+    margin-bottom: 15px;
+}
+
+.memo-search-box input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: border-color 0.2s;
+    color: var(--text-color);
+}
+
+.memo-search-box input:focus {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.memo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Memo Card */
+.memo-card {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.memo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    border-radius: 16px 0 0 16px;
+}
+
+.memo-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.memo-card:active {
+    transform: scale(0.98);
+}
+
+.memo-card-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    color: var(--text-color);
+    padding-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.memo-card-preview {
+    font-size: 0.8rem;
+    color: #999;
+    padding-left: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.memo-card-date {
+    font-size: 0.7rem;
+    color: #bbb;
+    padding-left: 10px;
+    margin-top: 6px;
+}
+
+/* Memo Empty State */
+.memo-empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #bbb;
+}
+
+.memo-empty-state .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.memo-empty-state p {
+    font-size: 1rem;
+    margin-bottom: 5px;
+}
+
+.memo-empty-state .empty-sub {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+/* Memo Color Selector */
+.memo-color-selector {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+}
+
+.color-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-dot:hover {
+    transform: scale(1.15);
+}
+
+.color-dot:active {
+    transform: scale(1.05);
+}
+
+.color-dot.selected {
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Memo modal textarea */
+#memoContentInput {
+    width: 100%;
+    min-height: 150px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    line-height: 1.6;
+}
+
+#memoContentInput:focus {
+    border-color: var(--primary-color);
+}
+
+/* Midnight theme memo adjustments */
+[data-bg="midnight"] .memo-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-bg="midnight"] .memo-card-title {
+    color: #eee;
+}
+
+[data-bg="midnight"] .memo-card-preview {
+    color: #aaa;
+}
+
+[data-bg="midnight"] .memo-search-box input {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #eee;
+}
+
+[data-bg="midnight"] #memoContentInput {
+    background: rgba(255, 255, 255, 0.1);
+    color: #eee;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-bg="midnight"] .memo-empty-state {
+    color: #888;
+}
+
+/* Black theme memo adjustments */
+[data-theme="black"] .memo-card {
+    background: rgba(60, 60, 60, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="black"] .memo-card-title {
+    color: #eee;
+}
+
+[data-theme="black"] .memo-card-preview {
+    color: #aaa;
+}
+
+[data-theme="black"] .memo-search-box input {
+    background: rgba(60, 60, 60, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #eee;
+}

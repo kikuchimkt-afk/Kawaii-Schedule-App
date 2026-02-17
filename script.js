@@ -132,6 +132,221 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === settingsModal) settingsModal.classList.add('hidden');
     });
 
+    // ===== PAGE NAVIGATION =====
+    const navCalendarBtn = document.getElementById('navCalendar');
+    const navMemoBtn = document.getElementById('navMemo');
+    const pageCalendar = document.getElementById('pageCalendar');
+    const pageMemo = document.getElementById('pageMemo');
+
+    function switchPage(pageName) {
+        // Hide all pages
+        document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+        // Deactivate all nav items
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        if (pageName === 'calendar') {
+            pageCalendar.classList.add('active');
+            navCalendarBtn.classList.add('active');
+        } else if (pageName === 'memo') {
+            pageMemo.classList.add('active');
+            navMemoBtn.classList.add('active');
+            renderMemos();
+        }
+    }
+
+    navCalendarBtn.addEventListener('click', () => switchPage('calendar'));
+    navMemoBtn.addEventListener('click', () => switchPage('memo'));
+
+    // ===== MEMO FUNCTIONALITY =====
+    let memos = JSON.parse(localStorage.getItem('kawaiiMemos')) || [];
+    let editingMemoId = null;
+    let selectedMemoColor = '#ffb7c5';
+
+    const memoModal = document.getElementById('memoModal');
+    const closeMemoModalBtn = document.getElementById('closeMemoModal');
+    const memoTitleInput = document.getElementById('memoTitleInput');
+    const memoContentInput = document.getElementById('memoContentInput');
+    const saveMemoBtn = document.getElementById('saveMemoBtn');
+    const deleteMemoBtn = document.getElementById('deleteMemoBtn');
+    const memoModalTitle = document.getElementById('memoModalTitle');
+    const addMemoBtn = document.getElementById('addMemoBtn');
+    const memoSearchInput = document.getElementById('memoSearchInput');
+
+    // Memo Modal open/close
+    closeMemoModalBtn.addEventListener('click', () => memoModal.classList.add('hidden'));
+    memoModal.addEventListener('click', (e) => {
+        if (e.target === memoModal) memoModal.classList.add('hidden');
+    });
+
+    // Add Memo
+    addMemoBtn.addEventListener('click', () => openMemoModal(null));
+
+    // Save Memo
+    saveMemoBtn.addEventListener('click', saveMemo);
+
+    // Delete Memo
+    deleteMemoBtn.addEventListener('click', () => {
+        if (editingMemoId && confirm('このメモを削除してもいい？')) {
+            memos = memos.filter(m => m.id !== editingMemoId);
+            saveMemos();
+            memoModal.classList.add('hidden');
+            renderMemos();
+        }
+    });
+
+    // Color Selector
+    document.querySelectorAll('#memoColorSelector .color-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+            document.querySelectorAll('#memoColorSelector .color-dot').forEach(d => d.classList.remove('selected'));
+            dot.classList.add('selected');
+            selectedMemoColor = dot.getAttribute('data-color');
+        });
+    });
+
+    // Search
+    memoSearchInput.addEventListener('input', () => renderMemos());
+
+    function openMemoModal(memo) {
+        if (memo) {
+            // Editing existing
+            editingMemoId = memo.id;
+            memoModalTitle.textContent = '📝 メモを編集';
+            memoTitleInput.value = memo.title;
+            memoContentInput.value = memo.content;
+            selectedMemoColor = memo.color || '#ffb7c5';
+            deleteMemoBtn.style.display = 'block';
+        } else {
+            // New memo
+            editingMemoId = null;
+            memoModalTitle.textContent = '📝 新しいメモ';
+            memoTitleInput.value = '';
+            memoContentInput.value = '';
+            selectedMemoColor = '#ffb7c5';
+            deleteMemoBtn.style.display = 'none';
+        }
+
+        // Select color dot
+        document.querySelectorAll('#memoColorSelector .color-dot').forEach(d => {
+            d.classList.remove('selected');
+            if (d.getAttribute('data-color') === selectedMemoColor) {
+                d.classList.add('selected');
+            }
+        });
+
+        memoModal.classList.remove('hidden');
+        const mc = memoModal.querySelector('.modal-content');
+        if (mc) mc.scrollTop = 0;
+    }
+
+    function saveMemo() {
+        const title = memoTitleInput.value.trim();
+        const content = memoContentInput.value.trim();
+
+        if (!title && !content) {
+            alert('タイトルか内容を入力してね！');
+            return;
+        }
+
+        const now = new Date().toISOString();
+
+        if (editingMemoId) {
+            // Update existing
+            memos = memos.map(m => {
+                if (m.id === editingMemoId) {
+                    return {
+                        ...m,
+                        title: title || '無題のメモ',
+                        content,
+                        color: selectedMemoColor,
+                        updatedAt: now
+                    };
+                }
+                return m;
+            });
+        } else {
+            // New memo
+            const newMemo = {
+                id: Date.now(),
+                title: title || '無題のメモ',
+                content,
+                color: selectedMemoColor,
+                createdAt: now,
+                updatedAt: now
+            };
+            memos.unshift(newMemo);
+        }
+
+        saveMemos();
+        memoModal.classList.add('hidden');
+        renderMemos();
+    }
+
+    function saveMemos() {
+        localStorage.setItem('kawaiiMemos', JSON.stringify(memos));
+    }
+
+    function renderMemos() {
+        const memoList = document.getElementById('memoList');
+        const emptyState = document.getElementById('memoEmptyState');
+        const searchQuery = memoSearchInput.value.trim().toLowerCase();
+
+        memoList.innerHTML = '';
+
+        // Filter memos by search
+        let filtered = memos;
+        if (searchQuery) {
+            filtered = memos.filter(m =>
+                m.title.toLowerCase().includes(searchQuery) ||
+                m.content.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        if (filtered.length === 0) {
+            emptyState.style.display = 'block';
+            if (searchQuery) {
+                emptyState.querySelector('p').textContent = '検索結果がないよ…';
+                emptyState.querySelector('.empty-sub').textContent = '別のキーワードで探してみてね 🔍';
+            } else {
+                emptyState.querySelector('p').textContent = 'まだメモがないよ！';
+                emptyState.querySelector('.empty-sub').textContent = '「＋ 新規メモ」から作ってみてね 🎀';
+            }
+        } else {
+            emptyState.style.display = 'none';
+        }
+
+        filtered.forEach(memo => {
+            const card = document.createElement('div');
+            card.className = 'memo-card';
+            card.style.setProperty('--memo-color', memo.color || '#ffb7c5');
+            // Set color bar via inline style on ::before won't work, use border-left instead
+            card.style.borderLeft = `5px solid ${memo.color || '#ffb7c5'}`;
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'memo-card-title';
+            titleEl.textContent = memo.title || '無題のメモ';
+
+            const previewEl = document.createElement('div');
+            previewEl.className = 'memo-card-preview';
+            previewEl.textContent = memo.content || '';
+
+            const dateEl = document.createElement('div');
+            dateEl.className = 'memo-card-date';
+            const dateObj = new Date(memo.updatedAt || memo.createdAt);
+            dateEl.textContent = dateObj.toLocaleDateString('ja-JP', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            card.appendChild(titleEl);
+            card.appendChild(previewEl);
+            card.appendChild(dateEl);
+
+            card.addEventListener('click', () => openMemoModal(memo));
+
+            memoList.appendChild(card);
+        });
+    }
+
     // Sticker selection in modal
     const stickers = document.getElementById('stickerSelector').querySelectorAll('span');
     stickers.forEach(s => {
@@ -692,7 +907,8 @@ document.addEventListener('DOMContentLoaded', () => {
             events: events,
             periodEvents: periodEvents,
             appSettings: appSettings,
-            version: 1
+            memos: memos,
+            version: 2
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -722,12 +938,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.events) events = data.events;
                 if (data.periodEvents) periodEvents = data.periodEvents;
                 if (data.appSettings) appSettings = data.appSettings;
+                if (data.memos) memos = data.memos;
 
                 // Save to storage
                 saveTodos();
                 localStorage.setItem('kawaiiEvents', JSON.stringify(events));
                 savePeriods();
                 saveSettings();
+                saveMemos();
 
                 // Reload UI
                 applyTheme(appSettings.theme);
@@ -735,6 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateCountdownDisplay();
                 renderCalendar();
                 renderTodos();
+                renderMemos();
 
                 alert('復元完了！おかえりなさい🎀');
                 document.getElementById('settingsModal').classList.add('hidden');
