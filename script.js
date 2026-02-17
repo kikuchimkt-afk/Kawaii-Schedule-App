@@ -9,9 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal elements
     const modal = document.getElementById('eventModal');
-    // const closeModal = document.querySelector('.close-btn'); // removed
     const modalDate = document.getElementById('modalDate');
-    const modalTextarea = modal.querySelector('textarea');
+    const modalTextarea = document.getElementById('eventDiary');
     const saveBtn = document.getElementById('saveEventBtn');
 
     let currentDate = new Date();
@@ -38,8 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         delete appSettings.countdown;
         appSettings.countdownInterval = 3;
     }
-
-
 
     // Event Listeners
     prevMonthBtn.addEventListener('click', () => changeMonth(-1));
@@ -78,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addBtn = document.getElementById('addCountdownBtn');
     if (addBtn) {
         addBtn.addEventListener('click', () => {
-            const title = document.getElementById('newCountdownTitle').value;
+            const title = document.getElementById('newCountdownTitle').value.trim();
             const date = document.getElementById('newCountdownDate').value;
             if (title && date) {
                 if (!appSettings.countdowns) appSettings.countdowns = [];
@@ -89,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset inputs
                 document.getElementById('newCountdownTitle').value = '';
                 document.getElementById('newCountdownDate').value = '';
+            } else {
+                alert('イベント名と日付を入力してね！');
             }
         });
     }
@@ -98,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (intervalInput) {
         intervalInput.addEventListener('change', (e) => {
             let val = parseInt(e.target.value);
-            if (val < 1) val = 1;
+            if (isNaN(val) || val < 1) val = 1;
             appSettings.countdownInterval = val;
             saveSettings();
             updateCountdownDisplay(); // restart loop
@@ -110,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const bg = btn.getAttribute('data-bg');
             applyBackground(bg);
-            saveSettings(); // appSettings will store 'bg'
+            saveSettings();
         });
     });
 
@@ -126,8 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (restoreBtn) restoreBtn.addEventListener('click', restoreData);
 
     // Close modal when clicking outside content
-    window.addEventListener('click', (e) => {
+    modal.addEventListener('click', (e) => {
         if (e.target === modal) hideModal();
+    });
+    settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) settingsModal.classList.add('hidden');
     });
 
@@ -198,6 +199,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.classList.add('today');
             }
 
+            // Color weekends
+            const dayOfWeek = (firstDay + i - 1) % 7;
+            if (dayOfWeek === 0) {
+                cell.style.color = '#ff6b6b';
+            } else if (dayOfWeek === 6) {
+                cell.style.color = '#4dabf7';
+            }
+
             const dateKey = `${year}-${month + 1}-${i}`;
 
             // Check for events and add indicator
@@ -212,9 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.classList.add('has-stamp');
                 }
 
-                // If there is text, OR if there is a stamp (user wants to know if there is a schedule),
-                // but usually if there is a stamp, that's enough visibility.
-                // Let's show the dot ONLY if there is text, to differentiate "just a stamp" vs "comment written".
+                // Show the dot if there is text
                 if (eventData.text) {
                     const dot = document.createElement('div');
                     dot.classList.add('event-dot');
@@ -226,19 +233,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     cell.style.backgroundImage = `url(${eventData.image})`;
                     cell.style.backgroundSize = 'cover';
                     cell.style.backgroundPosition = 'center';
-                    // Text might need shadow if image is present
-                    cell.style.textShadow = '0 0 3px white';
+                    cell.style.textShadow = '0 0 3px white, 0 0 6px white';
                 }
             }
 
             // Render multi-day events
-            // We need to check if this day is part of any period event
             const dateObj = new Date(year, month, i);
-            const dateStr = dateKey; // format is YYYY-M-D, but Date comparison is better with objects or zero-padded strings.
-            // Let's standardise comparison using date objects for ranges
-
-            // To properly render bars that span correctly, we need to know:
-            // Is this the start? End? Middle?
 
             periodEvents.forEach(pEvent => {
                 const start = new Date(pEvent.start);
@@ -247,27 +247,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Normalize time to 00:00:00 for accurate day comparison
                 start.setHours(0, 0, 0, 0);
                 end.setHours(0, 0, 0, 0);
-                dateObj.setHours(0, 0, 0, 0);
+                const dateObjNorm = new Date(dateObj);
+                dateObjNorm.setHours(0, 0, 0, 0);
 
-                if (dateObj >= start && dateObj <= end) {
+                if (dateObjNorm >= start && dateObjNorm <= end) {
                     const bar = document.createElement('div');
                     bar.textContent = pEvent.title;
                     bar.classList.add('event-bar');
 
-                    if (dateObj.getTime() === start.getTime()) {
+                    if (dateObjNorm.getTime() === start.getTime()) {
                         bar.classList.add('start');
                     }
-                    if (dateObj.getTime() === end.getTime()) {
+                    if (dateObjNorm.getTime() === end.getTime()) {
                         bar.classList.add('end');
                     }
-                    if (dateObj > start && dateObj < end) {
+                    if (dateObjNorm > start && dateObjNorm < end) {
                         bar.classList.add('middle');
-                        bar.textContent = pEvent.title; // Repeat title for now, or empty string if we want continuous look
-                        // CSS text-overflow will handle it, but for middle bars maybe we hide text or keep it?
-                        // Keeping it allows seeing what it is if start is last week.
+                        bar.textContent = pEvent.title;
                     }
 
-                    // Handle click on bar to delete (simple implementation)
+                    // Handle click on bar to delete
                     bar.addEventListener('click', (e) => {
                         e.stopPropagation();
                         if (confirm(`『${pEvent.title}』を削除しますか？`)) {
@@ -305,6 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             todos.push(newTodo);
             todoInput.value = '';
+            // Blur keyboard on mobile after adding
+            todoInput.blur();
             saveTodos();
             renderTodos();
         }
@@ -324,9 +325,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deleteTodo(id) {
-        todos = todos.filter(todo => todo.id !== id);
-        saveTodos();
-        renderTodos();
+        if (confirm('この予定を削除していい？')) {
+            todos = todos.filter(todo => todo.id !== id);
+            saveTodos();
+            renderTodos();
+        }
     }
 
     function saveTodos() {
@@ -341,10 +344,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (todo.completed) li.classList.add('completed');
 
             li.innerHTML = `
-                <div class="check-circle" onclick="window.toggleTodo(${todo.id})"></div>
+                <div class="check-circle" data-id="${todo.id}"></div>
                 <span>${escapeHtml(todo.text)}</span>
-                <button class="delete-btn" onclick="window.deleteTodo(${todo.id})">&times;</button>
+                <button class="delete-btn" data-id="${todo.id}">&times;</button>
             `;
+
+            // Use event delegation instead of inline onclick
+            li.querySelector('.check-circle').addEventListener('click', () => toggleTodo(todo.id));
+            li.querySelector('.delete-btn').addEventListener('click', () => deleteTodo(todo.id));
+
             todoList.appendChild(li);
         });
     }
@@ -400,6 +408,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('eventEndDate').value = `${y}-${padM}-${padD}`;
 
         modal.classList.remove('hidden');
+
+        // Scroll modal content to top
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
+        }
     }
 
     function hideModal() {
@@ -445,7 +459,13 @@ document.addEventListener('DOMContentLoaded', () => {
             savePeriods();
         }
 
-        localStorage.setItem('kawaiiEvents', JSON.stringify(events));
+        try {
+            localStorage.setItem('kawaiiEvents', JSON.stringify(events));
+        } catch (e) {
+            console.error('LocalStorage save failed:', e);
+            alert('保存に失敗しました。画像が大きすぎるかもしれません。画像を削除してもう一度試してね💦');
+            return;
+        }
         renderCalendar(); // Refresh
         hideModal();
     }
@@ -457,8 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- New Feature Functions ---
 
     function applyTheme(theme) {
-        // Remove all theme attributes first (or just set the new one)
-        // We defined themes using [data-theme="name"]
         if (theme === 'pink') {
             document.documentElement.removeAttribute('data-theme');
         } else {
@@ -493,9 +511,9 @@ document.addEventListener('DOMContentLoaded', () => {
             countdownIntervalId = null;
         }
 
-        const events = appSettings.countdowns || [];
+        const cdEvents = appSettings.countdowns || [];
 
-        if (events.length === 0) {
+        if (cdEvents.length === 0) {
             display.classList.add('hidden');
             return;
         }
@@ -504,12 +522,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Function to show one event
         const showEvent = () => {
-            if (events.length === 0) return;
+            if (cdEvents.length === 0) return;
 
             // Wrap index
-            if (currentCountdownIndex >= events.length) currentCountdownIndex = 0;
+            if (currentCountdownIndex >= cdEvents.length) currentCountdownIndex = 0;
 
-            const event = events[currentCountdownIndex];
+            const event = cdEvents[currentCountdownIndex];
             const targetDate = new Date(event.date);
             const today = new Date();
             targetDate.setHours(0, 0, 0, 0);
@@ -520,11 +538,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let html = '';
             if (diffDays > 0) {
-                html = `${event.title}まで あと <span style="font-size:1.5em; color:var(--accent-color);">${diffDays}</span> 日！`;
+                html = `${escapeHtml(event.title)}まで あと <span style="font-size:1.5em; color:var(--accent-color);">${diffDays}</span> 日！`;
             } else if (diffDays === 0) {
-                html = `${event.title} 当日だよ！楽しんで🎉`;
+                html = `${escapeHtml(event.title)} 当日だよ！楽しんで🎉`;
             } else {
-                html = `${event.title} 終了！お疲れ様 🎉`;
+                html = `${escapeHtml(event.title)} 終了！お疲れ様 🎉`;
             }
             display.innerHTML = html;
 
@@ -536,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showEvent();
 
         // Set interval if multiple events
-        if (events.length > 1) {
+        if (cdEvents.length > 1) {
             const sec = appSettings.countdownInterval || 3;
             countdownIntervalId = setInterval(showEvent, sec * 1000);
         }
@@ -547,44 +565,96 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!listContainer) return;
 
         listContainer.innerHTML = '';
-        const events = appSettings.countdowns || [];
+        const cdEvents = appSettings.countdowns || [];
 
-        events.forEach((ev, index) => {
+        cdEvents.forEach((ev, index) => {
             const div = document.createElement('div');
             div.className = 'countdown-item';
-            div.innerHTML = `
-                <span>${ev.title} (${ev.date})</span>
-                <button class="countdown-delete-btn" onclick="deleteCountdown(${index})">削除</button>
-            `;
+
+            const span = document.createElement('span');
+            span.textContent = `${ev.title} (${ev.date})`;
+
+            const btn = document.createElement('button');
+            btn.className = 'countdown-delete-btn';
+            btn.textContent = '削除';
+            btn.addEventListener('click', () => deleteCountdown(index));
+
+            div.appendChild(span);
+            div.appendChild(btn);
             listContainer.appendChild(div);
         });
     }
 
-    // Expose delete helper
-    window.deleteCountdown = function (index) {
+    // Countdown delete function
+    function deleteCountdown(index) {
         if (confirm('削除してもいい？')) {
             appSettings.countdowns.splice(index, 1);
             saveSettings();
             renderCountdownList();
             updateCountdownDisplay();
         }
-    };
+    }
 
     // Image Handling
     let currentImageBase64 = null;
 
-    function handleImageUpload(e) {
+    // Resize image to reduce storage usage
+    function resizeImage(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = reject;
+                img.src = event.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            currentImageBase64 = event.target.result;
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert('画像ファイルを選択してね！');
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            // Resize image to save localStorage space (max 800px, 70% quality JPEG)
+            const resized = await resizeImage(file, 800, 800, 0.7);
+            currentImageBase64 = resized;
             const preview = document.getElementById('imagePreview');
             preview.src = currentImageBase64;
             document.getElementById('imagePreviewContainer').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            console.error('Image processing failed:', err);
+            alert('画像の読み込みに失敗しました💦');
+            e.target.value = '';
+        }
     }
 
     function removeImage() {
@@ -592,12 +662,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cameraInput').value = '';
         document.getElementById('galleryInput').value = '';
         document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('imagePreview').src = '';
     }
 
     function showCelebration() {
         const overlay = document.getElementById('celebrationOverlay');
         const messages = ["えらすぎ！天才！", "優勝！🏆", "かわいい！", "最強のJK！", "おつかれさま💖"];
-        const msgEl = document.getElementById('celebrartionMessage');
+        const msgEl = document.getElementById('celebrationMessage');
 
         msgEl.textContent = messages[Math.floor(Math.random() * messages.length)];
         overlay.classList.remove('hidden');
@@ -660,6 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Reload UI
                 applyTheme(appSettings.theme);
+                applyBackground(appSettings.bg || '');
                 updateCountdownDisplay();
                 renderCalendar();
                 renderTodos();
@@ -675,10 +747,10 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     }
 
-    // Expose helpers globally
+    // Expose helpers globally (for backward compatibility)
     window.toggleTodo = toggleTodo;
     window.deleteTodo = deleteTodo;
-    window.deleteCountdown = deleteCountdown; // Correctly expose this
+    window.deleteCountdown = deleteCountdown;
 
     function init() {
         renderCalendar();
@@ -687,6 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyBackground(appSettings.bg || '');
         renderCountdownList();
         updateCountdownDisplay();
+        updateCurrentDateDisplay();
     }
 
     init();

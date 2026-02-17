@@ -3,7 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Kawaii Life Planner - かわいい予定管理アプリ">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffb7c5">
     <title>Kawaii Life Planner</title>
     <!-- Google Fonts: Zen Maru Gothic for rounded, cute text -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,9 +32,9 @@
             <!-- Calendar Section -->
             <section class="calendar-wrapper">
                 <div class="calendar-header">
-                    <button id="prevMonth" class="nav-btn">◀</button>
+                    <button id="prevMonth" class="nav-btn" aria-label="前の月">◀</button>
                     <h2 id="monthLabel">February</h2>
-                    <button id="nextMonth" class="nav-btn">▶</button>
+                    <button id="nextMonth" class="nav-btn" aria-label="次の月">▶</button>
                 </div>
                 <div class="days-grid">
                     <div class="day-name sun">Sun</div>
@@ -49,7 +54,7 @@
             <section class="daily-view">
                 <h3>✨ Today's Tasks ✨</h3>
                 <div class="todo-input-group">
-                    <input type="text" id="todoInput" placeholder="新しい予定を追加してね...">
+                    <input type="text" id="todoInput" placeholder="新しい予定を追加してね..." enterkeyhint="done">
                     <button id="addTodoBtn">Add 💖</button>
                 </div>
                 <ul class="todo-list" id="todoList">
@@ -71,7 +76,7 @@
     <div id="celebrationOverlay" class="celebration-overlay hidden">
         <div class="celebration-content">
             <span class="celebration-emoji">🎉</span>
-            <h2 id="celebrartionMessage">えらすぎ！天才！</h2>
+            <h2 id="celebrationMessage">えらすぎ！天才！</h2>
         </div>
     </div>
 
@@ -84,7 +89,7 @@
             <h4 class="section-title">推し活カウントダウン 🔥</h4>
 
             <div class="input-group">
-                <label>切り替え時間 (秒)</label>
+                <label for="countdownInterval">切り替え時間 (秒)</label>
                 <input type="number" id="countdownInterval" min="1" value="3">
             </div>
 
@@ -94,11 +99,11 @@
 
             <div class="add-countdown-box">
                 <div class="input-group">
-                    <label>何のイベント？</label>
+                    <label for="newCountdownTitle">何のイベント？</label>
                     <input type="text" id="newCountdownTitle" placeholder="ライブ、誕生日...">
                 </div>
                 <div class="input-group">
-                    <label>いつ？</label>
+                    <label for="newCountdownDate">いつ？</label>
                     <input type="date" id="newCountdownDate">
                 </div>
                 <button id="addCountdownBtn" class="save-btn secondary">追加する ➕</button>
@@ -147,11 +152,11 @@
             <span class="close-btn" id="closeEventModal">&times;</span>
             <h3 id="modalDate">Daily Detail</h3>
             <div class="input-group">
-                <label>イベント名 (期間予定)</label>
+                <label for="eventTitle">イベント名 (期間予定)</label>
                 <input type="text" id="eventTitle" placeholder="旅行、テストなど...">
             </div>
             <div class="input-group">
-                <label>終了日</label>
+                <label for="eventEndDate">終了日</label>
                 <input type="date" id="eventEndDate">
             </div>
 
@@ -171,11 +176,11 @@
                 </div>
                 <div id="imagePreviewContainer" class="hidden">
                     <img id="imagePreview" src="" alt="Preview">
-                    <button id="removeImageBtn">🗑️</button>
+                    <button id="removeImageBtn" type="button">🗑️</button>
                 </div>
             </div>
 
-            <textarea placeholder="今日の日記や詳細..."></textarea>
+            <textarea id="eventDiary" placeholder="今日の日記や詳細..."></textarea>
 
             <div class="stamp-section">
                 <p>スタンプ</p>
